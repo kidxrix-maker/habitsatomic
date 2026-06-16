@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atomic Habits - Break Bad Habits</title>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- styles for the 3 new additions only — matches the existing pink theme -->
+  <style>
+    /* floating sticker cards filling the empty side space */
+    section {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sticker {
+      position: absolute;
+      background: white;
+      border: 3px solid #f9a8d4;
+      border-radius: 14px;
+      padding: 10px 18px;
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      color: #9d174d;
+      box-shadow: 0 5px 14px rgba(131, 24, 67, 0.15);
+      pointer-events: none;
+      white-space: nowrap;
+      animation: floatAround 4s ease-in-out infinite;
+    }
+
+    .sticker .no  { color: #dc2626; }
+    .sticker .yes { color: #16a34a; }
+
+    .sticker-label {
+      position: absolute;
+      font-family: Arial, sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 3px;
+      font-weight: bold;
+      color: #be185d;
+      pointer-events: none;
+    }
+
+    @keyframes floatAround {
+      0%, 100% { transform: translateY(0) rotate(-6deg); }
+      50%      { transform: translateY(-25px) rotate(4deg); }
+    }
+
+    /* twinkling stars scattered in the hero */
+    .sparkle {
+      position: absolute;
+      pointer-events: none;
+      user-select: none;
+      animation: spinPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes spinPulse {
+      0%, 100% { transform: scale(0.7) rotate(0deg);   opacity: 0.5; }
+      50%      { transform: scale(1.5) rotate(180deg); opacity: 1; }
+    }
+
+    @media (max-width: 1100px) {
+      .sticker, .sticker-label, .sparkle, .book-sticker { display: none; }
+    }
+
+    /* scrolling marquee banner */
+    .marquee {
+      background-color: #831843;
+      overflow: hidden;
+      white-space: nowrap;
+      padding: 14px 0;
+    }
+
+    .marquee-track {
+      display: inline-block;
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+      font-size: 1rem;
+      letter-spacing: 4px;
+      color: #fce7f3;
+      animation: scrollLeft 20s linear infinite;
+    }
+
+    .marquee-track .star { color: #f9a8d4; }
+
+    @keyframes scrollLeft {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* boxes tilt playfully on hover */
+    .box {
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .box:hover {
+      transform: rotate(-1.5deg) scale(1.03);
+      box-shadow: 0 8px 20px rgba(219, 39, 119, 0.18);
+    }
+
+    /* sparkle trail following the cursor */
+    .trail {
+      position: absolute;
+      pointer-events: none;
+      z-index: 999;
+      animation: trailFade 0.7s ease-out forwards;
+    }
+
+    @keyframes trailFade {
+      to { opacity: 0; transform: translateY(-30px) rotate(60deg) scale(0.4); }
+    }
+
+    /* the book floats and wiggles when you hover it */
+    .book-img {
+      animation: bookFloat 3.5s ease-in-out infinite;
+      cursor: pointer;
+    }
+
+    @keyframes bookFloat {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-14px); }
+    }
+
+    .book-img:hover {
+      animation: bookWiggle 0.5s ease-in-out infinite;
+    }
+
+    @keyframes bookWiggle {
+      0%, 100% { transform: rotate(0deg) scale(1.06); }
+      25%      { transform: rotate(-4deg) scale(1.06); }
+      75%      { transform: rotate(4deg) scale(1.06); }
+    }
+
+    /* hero: book + author side by side */
+    .hero-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 60px;
+      flex-wrap: wrap;
+    }
+
+    .author-card {
+      text-align: center;
+      width: 230px;
+    }
+
+    .author-img {
+      width: 160px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 4px solid white;
+      box-shadow: 0 6px 18px rgba(131, 24, 67, 0.25);
+      display: block;
+      margin: 20px auto 15px auto;
+      transform: scale(0);
+      opacity: 0;
+    }
+
+    .author-img.pop {
+      animation: jumpOut 0.9s cubic-bezier(0.28, 0.84, 0.42, 1) forwards;
+    }
+
+    @keyframes jumpOut {
+      0%   { transform: scale(0) translateY(80px); opacity: 0; }
+      45%  { transform: scale(1.18) translateY(-30px); opacity: 1; }
+      65%  { transform: scale(0.92) translateY(10px); }
+      82%  { transform: scale(1.06) translateY(-8px); }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .author-name {
+      margin-top: 0;
+      opacity: 0;
+      transition: opacity 0.5s ease 0.4s;
+    }
+
+    .author-card.revealed .author-name {
+      opacity: 1;
+    }
+
+    /* full screen bad habits picture */
+    #bad-habits-pic {
+      height: 100vh;
+      background: url('https://i.kym-cdn.com/photos/images/original/002/979/243/41a.jpg') center / cover no-repeat;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    #bad-habits-pic p {
+      background: rgba(131, 24, 67, 0.8);
+      color: white;
+      font-style: italic;
+      padding: 12px 28px;
+      border-radius: 30px;
+      margin-bottom: 40px;
+      font-size: 1.05rem;
+    }
+
+    /* keys beside 4 key lessons heading */
+    .lessons-head {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .lessons-head h2 {
+      margin-bottom: 0;
+    }
+
+    .key-img {
+      width: 60px;
+      height: auto;
+      animation: keySwing 2.5s ease-in-out infinite;
+    }
+
+    @keyframes keySwing {
+      0%, 100% { transform: rotate(-12deg) translateY(0); }
+      50%      { transform: rotate(12deg) translateY(-8px); }
+    }
+
+    /* cut-out pinterest stickers floating around the book */
+    .book-sticker {
+      position: absolute;
+      pointer-events: none;
+      z-index: 3;
+      filter: drop-shadow(0 4px 9px rgba(131, 24, 67, 0.20));
+      animation: floatAround 4.5s ease-in-out infinite;
+    }
+
+    /* get your copy / buy section */
+    .buy-book {
+      width: 160px;
+      border-radius: 10px;
+      margin: 25px auto 12px auto;
+      display: block;
+      box-shadow: 0 6px 18px rgba(131, 24, 67, 0.2);
+    }
+    .buy-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      margin: 22px auto;
+      max-width: 640px;
+    }
+    .buy-btn { margin-top: 0; }
+  </style>
+</head>
+
+<body>
+
+
+
+
+  <!-- hero -->
+  <section id="home" class="hero">
+
+    <img class="book-sticker" src="images/sticker_01.png" alt="" style="top:7%;  left:13%; width:78px; animation-duration:4.6s; animation-delay:0.0s;">
+    <img class="book-sticker" src="images/sticker_02.png" alt="" style="top:6%;  right:13%; width:78px; animation-duration:5.2s; animation-delay:0.4s;">
+    <img class="book-sticker" src="images/sticker_03.png" alt="" style="top:20%; left:3%; width:98px; animation-duration:4.2s; animation-delay:0.8s;">
+    <img class="book-sticker" src="images/sticker_05.png" alt="" style="top:20%; right:3%; width:92px; animation-duration:4.9s; animation-delay:0.2s;">
+    <img class="book-sticker" src="images/sticker_06.png" alt="" style="top:37%; left:8%; width:82px; animation-duration:3.8s; animation-delay:1.1s;">
+    <img class="book-sticker" src="images/sticker_07.png" alt="" style="top:37%; right:8%; width:86px; animation-duration:4.4s; animation-delay:0.6s;">
+    <img class="book-sticker" src="images/sticker_08.png" alt="" style="top:54%; left:2%; width:104px; animation-duration:5.0s; animation-delay:1.5s;">
+    <img class="book-sticker" src="images/sticker_09.png" alt="" style="top:54%; right:2%; width:96px; animation-duration:3.9s; animation-delay:0.3s;">
+    <img class="book-sticker" src="images/sticker_10.png" alt="" style="top:70%; left:7%; width:84px; animation-duration:4.7s; animation-delay:1.2s;">
+    <img class="book-sticker" src="images/sticker_11.png" alt="" style="top:70%; right:7%; width:88px; animation-duration:4.1s; animation-delay:0.9s;">
+    <img class="book-sticker" src="images/sticker_13.png" alt="" style="top:85%; left:3%; width:80px; animation-duration:4.3s; animation-delay:0.5s;">
+    <img class="book-sticker" src="images/sticker_14.png" alt="" style="top:85%; right:3%; width:80px; animation-duration:4.8s; animation-delay:1.4s;">
+    <img class="book-sticker" src="images/sticker_15.png" alt="" style="top:90%; left:24%; width:70px; animation-duration:3.7s; animation-delay:1.0s;">
+    <img class="book-sticker" src="images/sticker_16.png" alt="" style="top:90%; right:24%; width:70px; animation-duration:4.5s; animation-delay:0.7s;">
+
+
+    <!-- left side: old-you habit stickers drifting around -->
+
+    <!-- right side: new-you habit stickers bouncing happily -->
+
+    <h1>BREAK BAD HABITS<br>WITH ATOMIC HABITS</h1>
+    <p>Small changes. Big results.</p>
+    <p>It is not about being perfect. It is about being <strong>1% better every day.</strong></p>
+
+    <div class="hero-row">
+
+      <div>
+        <img src="https://m.media-amazon.com/images/I/81wgcld4wxL._AC_UF1000,1000_QL80_.jpg" alt="Atomic Habits book" class="book-img">
+        <p class="caption">Atomic Habits by James Clear<br>(psst — hover over the book)</p>
+      </div>
+
+      <div class="author-card" id="author-card">
+        <button class="btn" id="author-btn" type="button" style="border: none; cursor: pointer;">Meet the Author</button>
+        <img src="https://images.gr-assets.com/authors/1393075384p8/7327369.jpg" alt="James Clear, author of Atomic Habits" class="author-img" id="author-img">
+        <p class="caption author-name"><strong>James Clear</strong><br>Author of Atomic Habits</p>
+      </div>
+
+    </div>
+
+    <a href="#bad-habits" class="btn">Start Improving Today</a>
+  </section>
+
+
+  <!-- scrolling banner -->
+  <div class="marquee" aria-hidden="true">
+    <span class="marquee-track">
+      1% BETTER EVERY DAY <span class="star">&#9733;</span> SMALL CHANGES, BIG RESULTS <span class="star">&#9733;</span> BREAK BAD HABITS <span class="star">&#9733;</span> BUILD GOOD ONES <span class="star">&#9733;</span>&nbsp;
+      1% BETTER EVERY DAY <span class="star">&#9733;</span> SMALL CHANGES, BIG RESULTS <span class="star">&#9733;</span> BREAK BAD HABITS <span class="star">&#9733;</span> BUILD GOOD ONES <span class="star">&#9733;</span>&nbsp;
+    </span>
+  </div>
+
+
+  <!-- bad habits -->
+  <section id="bad-habits" class="section-pink">
+
+    <h2>WHAT ARE BAD HABITS?</h2>
+    <p>Bad habits are things we do automatically without thinking. They feel good now but hurt us later.</p>
+
+    <img src="https://media.giphy.com/media/xT9IgG50Lg7rusRgqA/giphy.gif" alt="Tired lazy person" class="full-gif">
+    <p class="caption">me at 2am telling myself just 5 more minutes...</p>
+
+    <h3>Common Bad Habits</h3>
+
+    <div class="box">
+      <strong>Procrastination</strong>
+      <p>I will do it tomorrow. Said every single day.</p>
+    </div>
+
+    <div class="box">
+      <strong>Staying Up Late</strong>
+      <p>Sacrificing sleep for Netflix. Your future self hates this.</p>
+    </div>
+
+    <div class="box">
+      <strong>Excessive Phone Scrolling</strong>
+      <p>Opening TikTok for 5 minutes and waking up 2 hours later.</p>
+    </div>
+
+    <div class="box">
+      <strong>Skipping Exercise</strong>
+      <p>I will go to the gym tomorrow. Since January 1st.</p>
+    </div>
+  </section>
+
+
+  <!-- full screen bad habits picture -->
+  <section id="bad-habits-pic">
+    <p>all 4 bad habits in one picture. do not be this guy.</p>
+  </section>
+
+
+  <!-- transformation -->
+  <section id="transform" class="section-lavender">
+
+    <h2>THE TRANSFORMATION</h2>
+    <p>What happens when you actually read Atomic Habits and use it?</p>
+
+    <div class="transform-row">
+
+      <div class="transform-box">
+        <p class="before-label">BEFORE</p>
+        <img src="https://media.giphy.com/media/l2JhpjWPccQhsAMfu/giphy.gif" alt="Before - lazy unmotivated person" class="full-gif">
+        <p>Tired. Lazy. Unmotivated. Eating chips on the couch all day.</p>
+      </div>
+
+      <div class="arrow-col">
+        <img src="https://media.giphy.com/media/WoWm8YzFQJg5i/giphy.gif" alt="Person reading a book" class="book-gif">
+        <p>reads Atomic Habits</p>
+        <p class="big-arrow">&#8595;</p>
+        <p>applies the 4 laws</p>
+        <p class="big-arrow">&#8595;</p>
+      </div>
+
+      <div class="transform-box">
+        <p class="after-label">AFTER</p>
+        <img src="https://media.giphy.com/media/3oEjI5VtIhHvK37WYo/giphy.gif" alt="After - disciplined person working out seriously" class="full-gif">
+        <p>Disciplined. Consistent. Shows up every single day.</p>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- 4 lessons -->
+  <section id="lessons" class="section-peach">
+
+    <div class="lessons-head">
+      <img src="images/key.png" alt="Golden key" class="key-img">
+      <h2>4 KEY LESSONS</h2>
+      <img src="images/key.png" alt="Golden key" class="key-img">
+    </div>
+    <p>James Clear calls these the 4 Laws of Behaviour Change.</p>
+
+    <div class="box">
+      <strong>Law 1 — Make It Obvious</strong>
+      <p>Put good habits where you can see them. Want to read more? Put the book on your pillow. Out of sight means out of mind.</p>
+    </div>
+
+    <div class="box">
+      <strong>Law 2 — Make It Attractive</strong>
+      <p>Pair your habit with something you enjoy. Only listen to your favourite podcast while exercising. Make it something to look forward to.</p>
+    </div>
+
+    <div class="box">
+      <strong>Law 3 — Make It Easy</strong>
+      <p>Start tiny. Do not say I will exercise for 1 hour. Say I will do 2 push-ups. Make it so easy you cannot say no.</p>
+    </div>
+
+    <div class="box">
+      <strong>Law 4 — Make It Satisfying</strong>
+      <p>Reward yourself after completing a habit. Your brain loves rewards. Use that to your advantage.</p>
+    </div>
+  </section>
+
+
+  <!-- habit tracker -->
+  <section id="tracker" class="section-pink">
+
+    <h2>WEEKLY HABIT TRACKER</h2>
+    <p>Click the boxes to track your habits. Do not break the chain.</p>
+
+    <table>
+      <tr>
+        <th>Habit</th>
+        <th>Mon</th>
+        <th>Tue</th>
+        <th>Wed</th>
+        <th>Thu</th>
+        <th>Fri</th>
+      </tr>
+      <tr>
+        <td>Exercise</td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+      </tr>
+      <tr>
+        <td>Read 10 pages</td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+      </tr>
+      <tr>
+        <td>Drink water</td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+      </tr>
+      <tr>
+        <td>Sleep before midnight</td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+      </tr>
+      <tr>
+        <td>No phone before bed</td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+        <td><input type="checkbox" class="check"></td>
+      </tr>
+    </table>
+
+    <p id="progress-msg">You completed <strong><span id="count">0</span> / 25</strong> habits this week.</p>
+  </section>
+
+
+  <!-- quote -->
+  <section id="quote" class="section-lavender">
+
+    <h2>WORDS TO LIVE BY</h2>
+    <div class="quote-box">
+      <p class="big-quote">"You do not rise to the level of your goals. You fall to the level of your systems."</p>
+      <p>— James Clear, Atomic Habits</p>
+    </div>
+    <p>Your results come from your daily habits, not your wishes.</p>
+  </section>
+
+
+  <!-- scrolling banner -->
+  <div class="marquee" aria-hidden="true">
+    <span class="marquee-track">
+      DO NOT BREAK THE CHAIN <span class="star">&#9733;</span> SHOW UP EVERY DAY <span class="star">&#9733;</span> SYSTEMS OVER GOALS <span class="star">&#9733;</span> START TINY <span class="star">&#9733;</span>&nbsp;
+      DO NOT BREAK THE CHAIN <span class="star">&#9733;</span> SHOW UP EVERY DAY <span class="star">&#9733;</span> SYSTEMS OVER GOALS <span class="star">&#9733;</span> START TINY <span class="star">&#9733;</span>&nbsp;
+    </span>
+  </div>
+
+
+  <!-- get your copy -->
+  <section id="buy" class="section-pink">
+    <h2>GET YOUR COPY</h2>
+    <p>Ready to start? Grab <strong>Atomic Habits</strong> by James Clear and begin your 1% better journey today.</p>
+
+    <img src="https://m.media-amazon.com/images/I/81wgcld4wxL._AC_UF1000,1000_QL80_.jpg" alt="Atomic Habits book cover" class="buy-book">
+
+    <div class="buy-grid">
+      <a href="https://www.amazon.com/Atomic-Habits-Proven-Build-Break/dp/0735211299" target="_blank" rel="noopener" class="btn buy-btn">Buy on Amazon</a>
+      <a href="https://www.barnesandnoble.com/w/atomic-habits-james-clear/1129201155" target="_blank" rel="noopener" class="btn buy-btn">Barnes &amp; Noble</a>
+      <a href="https://www.penguinrandomhouse.com/books/543993/atomic-habits-by-james-clear/" target="_blank" rel="noopener" class="btn buy-btn">Penguin Random House</a>
+      <a href="https://jamesclear.com/atomic-habits" target="_blank" rel="noopener" class="btn buy-btn">Audiobook &amp; More</a>
+    </div>
+
+    <p class="caption">#1 New York Times Bestseller &middot; Over 25 million copies sold</p>
+  </section>
+
+
+  <!-- conclusion -->
+  <section id="conclusion" class="section-peach">
+
+    <h2>START TODAY</h2>
+    <p>You do not need to change everything at once.</p>
+    <p>Just pick <strong>one small habit</strong> — something that takes less than 2 minutes. Do it today. Do it tomorrow. Keep going.</p>
+    <br>
+    <a href="#home" class="btn">Build Better Habits</a>
+    <p class="footer">Based on Atomic Habits by James Clear</p>
+  </section>
+
+
+  <script src="script.js"></script>
+
+  <script>
+    // author photo jumps out on click
+    document.getElementById('author-btn').addEventListener('click', function () {
+      var img = document.getElementById('author-img');
+      var card = document.getElementById('author-card');
+      img.classList.remove('pop');     // allow replay on every click
+      void img.offsetWidth;            // force reflow to restart animation
+      img.classList.add('pop');
+      card.classList.add('revealed');
+    });
+
+    // sparkle trail following the cursor
+    var trailColors = ['#db2777', '#a855f7', '#f9a8d4', '#d946ef'];
+    var lastTrail = 0;
+    document.addEventListener('mousemove', function (e) {
+      var now = Date.now();
+      if (now - lastTrail < 70) return;   // don't flood the page
+      lastTrail = now;
+      var s = document.createElement('span');
+      s.className = 'trail';
+      s.textContent = '✦';
+      s.style.left = (e.pageX + 8) + 'px';
+      s.style.top = (e.pageY + 8) + 'px';
+      s.style.color = trailColors[Math.floor(Math.random() * trailColors.length)];
+      s.style.fontSize = (12 + Math.random() * 14) + 'px';
+      document.body.appendChild(s);
+      setTimeout(function () { s.remove(); }, 700);
+    });
+  </script>
+
+</body>
+</html>
